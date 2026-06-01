@@ -1,0 +1,55 @@
+version: '3.8'
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile.local
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=development
+      - DB_HOST=postgres
+      - DB_PORT=5432
+      - DB_USERNAME=postgres
+      - DB_PASSWORD=root
+      - DB_DATABASE=ParkPag_3
+      - NEXT_PUBLIC_STACK_PROJECT_ID=your-stack-project-id
+      - NEXT_PUBLIC_STACK_PUBLISHABLE_CLIENT_KEY=pck_replace_me
+      - STACK_SECRET_SERVER_KEY=ssk_replace_me
+      - QR_CODE_BASE_URL=http://localhost:3000/pre-checkout
+      - PAYCO_AUTH_URL=https://sso.payments.payco.com.br/realms/payco-payments/protocol/openid-connect/token
+      - PAYCO_CLIENT_ID=your-payco-client-id
+      - PAYCO_CLIENT_SECRET=replace_me
+      - PAYCO_WEBHOOK_URL=http://localhost:3000/payment/webhook/11
+      - SMTP_HOST=sandbox.smtp.mailtrap.io
+      - SMTP_PORT=2525
+      - SMTP_USER=replace_me
+      - SMTP_PASS=replace_me
+    volumes:
+      - .:/app
+      - /app/node_modules
+    depends_on:
+      - postgres
+    networks:
+      - park-pag-network
+
+  postgres:
+    image: postgres:15
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=root
+      - POSTGRES_DB=ParkPag_3
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - park-pag-network
+
+networks:
+  park-pag-network:
+    driver: bridge
+
+volumes:
+  postgres_data:
