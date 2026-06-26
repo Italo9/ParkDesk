@@ -13,6 +13,7 @@ import { COMPANY_GATEWAY } from './domain/ports/company-gateway';
 import { REQUESTER_GATEWAY } from './domain/ports/requester-gateway';
 import { CreateCompanySettingUseCase } from './application/create-company-setting.usecase';
 import { GetCompanySettingByCompanyUseCase } from './application/get-company-setting-by-company.usecase';
+import { GetSettingByCompanyIdUseCase } from './application/get-setting-by-company-id.usecase';
 import { UpdateCompanySettingUseCase } from './application/update-company-setting.usecase';
 import { RemoveCompanySettingUseCase } from './application/remove-company-setting.usecase';
 import { IsAutoRechargeActiveUseCase } from './application/is-auto-recharge-active.usecase';
@@ -31,12 +32,14 @@ import { IsAutoRechargeActiveUseCase } from './application/is-auto-recharge-acti
     { provide: REQUESTER_GATEWAY, useClass: RequesterGatewayAdapter },
     CreateCompanySettingUseCase,
     GetCompanySettingByCompanyUseCase,
+    GetSettingByCompanyIdUseCase,
     UpdateCompanySettingUseCase,
     RemoveCompanySettingUseCase,
     IsAutoRechargeActiveUseCase,
   ],
   exports: [
     GetCompanySettingByCompanyUseCase,
+    GetSettingByCompanyIdUseCase,
     IsAutoRechargeActiveUseCase,
     TypeOrmModule,
   ],
