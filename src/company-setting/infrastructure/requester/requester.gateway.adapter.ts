@@ -1,19 +1,16 @@
 import { Injectable } from '@nestjs/common';
 import { RequesterGateway, RequesterInfo } from '../../domain/ports/requester-gateway';
-import { UserService } from '../../../user/user.service';
+import { GetUserByTokenUseCase } from '../../../user/application/get-user-by-token.usecase';
 
 @Injectable()
 export class RequesterGatewayAdapter implements RequesterGateway {
-  constructor(private readonly userService: UserService) {}
+  constructor(private readonly getUserByToken: GetUserByTokenUseCase) {}
 
   async getByToken(token: string): Promise<RequesterInfo> {
-    const user = (await this.userService.getUserByToken(token)) as {
-      type: string;
-      companies?: { id: number }[];
-    };
+    const user = await this.getUserByToken.execute(token);
     return {
       type: user.type,
-      companies: (user.companies ?? []).map((c) => ({ id: c.id })),
+      companies: user.companies.map((c) => ({ id: c.id })),
     };
   }
 }
