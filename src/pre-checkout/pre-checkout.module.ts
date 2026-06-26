@@ -1,22 +1,20 @@
-import { forwardRef, Module } from '@nestjs/common';
-import { TypeOrmModule } from '@nestjs/typeorm';
-import { PreCheckoutController } from './pre-checkout.controller';
-import { PreCheckoutService } from './pre-checkout.service';
-import { TicketEntity } from './entities/ticket.entity';
+import { Module } from '@nestjs/common';
 import { TicketModule } from '../ticket/ticket.module';
-import { CompanySettingService } from '../company-setting/company-setting.service';
-import { CompanySetting } from '../company-setting/entities/company-setting.entity';
 import { CompanySettingModule } from '../company-setting/company-setting.module';
-import { ApiKeyService } from '../api_key/api-key.service';
-import { ApiKeyModule } from '../api_key/api-key.module';
-import { UserModule } from '../user/user.module';
-import { CompanyModule } from '../company/company.module';
-import { AuthModule } from '../auth/auth.module';
+import { PreCheckoutController } from './infrastructure/http/pre-checkout.controller';
+import { TicketGatewayAdapter } from './infrastructure/ticket/ticket.gateway.adapter';
+import { SettingsGatewayAdapter } from './infrastructure/settings/settings.gateway.adapter';
+import { TICKET_GATEWAY } from './domain/ports/ticket-gateway';
+import { SETTINGS_GATEWAY } from './domain/ports/settings-gateway';
+import { ProcessPreCheckoutUseCase } from './application/process-pre-checkout.usecase';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([TicketEntity, CompanySetting]), forwardRef(() => CompanyModule), TicketModule, CompanySettingModule, ApiKeyModule, UserModule, forwardRef(() => AuthModule)],
+  imports: [TicketModule, CompanySettingModule],
   controllers: [PreCheckoutController],
-  providers: [PreCheckoutService, CompanySettingService, ApiKeyService],
-  exports: [PreCheckoutService],
+  providers: [
+    { provide: TICKET_GATEWAY, useClass: TicketGatewayAdapter },
+    { provide: SETTINGS_GATEWAY, useClass: SettingsGatewayAdapter },
+    ProcessPreCheckoutUseCase,
+  ],
 })
 export class PreCheckoutModule {}
