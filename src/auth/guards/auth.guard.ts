@@ -2,7 +2,7 @@ import { Injectable, CanActivate, ExecutionContext, Inject, UnauthorizedExceptio
 import { AuthService } from '../ports/auth-service.interface';
 import { Request } from 'express';
 import { SessionService } from '../session.service';
-import { UserService } from '../../user/user.service';
+import { FindByEmailUseCase } from '../../user/application/find-by-email.usecase';
 import { User } from '../../user/entities/user.entity';
 import { Company } from '../../company/entities/company.entity';
 
@@ -17,7 +17,7 @@ export class AuthGuard implements CanActivate {
   constructor(
     @Inject('AuthService') private authService: AuthService,
     private readonly sessionService: SessionService,
-    private readonly userService: UserService,
+    private readonly findByEmail: FindByEmailUseCase,
   ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
@@ -40,13 +40,13 @@ export class AuthGuard implements CanActivate {
       throw new UnauthorizedException('Sessão não encontrada');
     }
 
-    const user = await this.userService.findByEmail(session.email);
+    const user = await this.findByEmail.execute(session.email);
     if (!user) {
       throw new UnauthorizedException('Usuário logado não encontrado');
     }
 
-    request.user = user;
-    request.companies = user.companies;
+    request.user = user as unknown as User;
+    request.companies = (user.companies ?? []) as unknown as Company[];
     return true;
   }
 }
