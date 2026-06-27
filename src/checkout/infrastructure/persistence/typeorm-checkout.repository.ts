@@ -29,7 +29,7 @@ export class TypeOrmCheckoutRepository implements CheckoutRepository {
   }
 
   async findById(id: number): Promise<Checkout | null> {
-    const row = await this.repo.findOne({ where: { id } });
+    const row = await this.repo.findOne({ where: { id }, relations: ['ticket'] });
     return row ? CheckoutMapper.toDomain(row) : null;
   }
 
