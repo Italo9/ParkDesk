@@ -1,23 +1,28 @@
 import { forwardRef, Module } from '@nestjs/common';
-import { TypeOrmModule } from '@nestjs/typeorm';
-import { CheckoutService } from '../checkout/checkout.service';
-import { CheckoutController } from '../checkout/checkout.controller';
-import { Checkout } from '../checkout/entities/checkout.entity';
-import { AuthGatewayService } from '../auth/auth-gateway.service';
-import { TicketService } from '../ticket/ticket.service';
-import { Ticket } from '../ticket/entities/ticket.entity';
-import { WebhookService } from './webhook.service';
-import { CompanySettingModule } from '../company-setting/company-setting.module';
 import { CheckoutModule } from '../checkout/checkout.module';
 import { PaymentModule } from '../payment/payment.module';
-import { Payment } from '../payment/entities/payment.entity';
-import { ApiKeyModule } from '../api_key/api-key.module';
-import { QrcodeModule } from '@/qrcode/qrcode.module';
+import { TicketModule } from '../ticket/ticket.module';
+import { WebhookController } from './infrastructure/http/webhook.controller';
+import { CheckoutGatewayAdapter } from './infrastructure/checkout/checkout.gateway.adapter';
+import { PaymentGatewayAdapter } from './infrastructure/payment/payment.gateway.adapter';
+import { TicketGatewayAdapter } from './infrastructure/ticket/ticket.gateway.adapter';
+import { CHECKOUT_GATEWAY } from './domain/ports/checkout-gateway';
+import { PAYMENT_GATEWAY } from './domain/ports/payment-gateway';
+import { TICKET_GATEWAY } from './domain/ports/ticket-gateway';
+import { HandlePaymentWebhookUseCase } from './application/handle-payment-webhook.usecase';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Checkout, Ticket, Payment]), forwardRef(() => QrcodeModule), forwardRef(() => CompanySettingModule), forwardRef(() => CheckoutModule), forwardRef(() => ApiKeyModule), forwardRef(() => PaymentModule)],
-  controllers: [CheckoutController],
-  providers: [CheckoutService, AuthGatewayService, TicketService, WebhookService],
-  exports: [TypeOrmModule, WebhookService],
+  imports: [
+    forwardRef(() => CheckoutModule),
+    forwardRef(() => PaymentModule),
+    forwardRef(() => TicketModule),
+  ],
+  controllers: [WebhookController],
+  providers: [
+    { provide: CHECKOUT_GATEWAY, useClass: CheckoutGatewayAdapter },
+    { provide: PAYMENT_GATEWAY, useClass: PaymentGatewayAdapter },
+    { provide: TICKET_GATEWAY, useClass: TicketGatewayAdapter },
+    HandlePaymentWebhookUseCase,
+  ],
 })
 export class WebhookModule {}
