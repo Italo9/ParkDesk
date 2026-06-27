@@ -39,6 +39,6 @@ import { RemoveTicketUseCase } from './application/remove-ticket.usecase';
     UpdateTicketUseCase,
     RemoveTicketUseCase,
   ],
-  exports: [FindTicketByNumberUseCase, TypeOrmModule],
+  exports: [FindTicketByNumberUseCase, UpdateTicketUseCase, TypeOrmModule],
 })
 export class TicketModule {}
