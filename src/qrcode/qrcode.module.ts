@@ -1,20 +1,43 @@
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { forwardRef, Module } from '@nestjs/common';
+import { ConfigModule } from '@nestjs/config';
 import { Ticket } from '../ticket/entities/ticket.entity';
-import { QrcodeController } from './qrcode.controller';
-import { QrcodeService } from './qrcode.service';
+import { Qrcode } from './entities/qrcode.entity';
 import { AuthModule } from '../auth/auth.module';
 import { UserModule } from '../user/user.module';
-import { Company } from '../company/entities/company.entity';
-import { Qrcode } from './entities/qrcode.entity';
-import { TicketModule } from '../ticket/ticket.module';
-import { CompanySettingModule } from '../company-setting/company-setting.module';
-import { CheckoutModule } from '@/checkout/checkout.module';
+import { QrcodeController } from './infrastructure/http/qrcode.controller';
+import { TypeOrmQrcodeRepository } from './infrastructure/persistence/typeorm-qrcode.repository';
+import { TicketStoreAdapter } from './infrastructure/persistence/ticket-store.adapter';
+import { QrImageAdapter } from './infrastructure/qr-image/qr-image.adapter';
+import { QRCODE_REPOSITORY } from './domain/ports/qrcode.repository';
+import { TICKET_STORE } from './domain/ports/ticket-store';
+import { QR_IMAGE } from './domain/ports/qr-image';
+import { GenerateQrCodeUseCase } from './application/generate-qr-code.usecase';
+import { ValidateQrCodeUseCase } from './application/validate-qr-code.usecase';
+import { ListTicketsUseCase } from './application/list-tickets.usecase';
+import { GetTicketUseCase } from './application/get-ticket.usecase';
+import { UpdateTicketUseCase } from './application/update-ticket.usecase';
+import { RemoveTicketUseCase } from './application/remove-ticket.usecase';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Qrcode, Ticket, Company]), forwardRef(() => AuthModule), forwardRef(() => UserModule), forwardRef(() => TicketModule), forwardRef(() => CompanySettingModule), forwardRef(() => CheckoutModule)],
+  imports: [
+    TypeOrmModule.forFeature([Qrcode, Ticket]),
+    ConfigModule,
+    forwardRef(() => AuthModule),
+    forwardRef(() => UserModule),
+  ],
   controllers: [QrcodeController],
-  providers: [QrcodeService],
-  exports: [QrcodeService],
+  providers: [
+    { provide: QRCODE_REPOSITORY, useClass: TypeOrmQrcodeRepository },
+    { provide: TICKET_STORE, useClass: TicketStoreAdapter },
+    { provide: QR_IMAGE, useClass: QrImageAdapter },
+    GenerateQrCodeUseCase,
+    ValidateQrCodeUseCase,
+    ListTicketsUseCase,
+    GetTicketUseCase,
+    UpdateTicketUseCase,
+    RemoveTicketUseCase,
+  ],
+  exports: [GenerateQrCodeUseCase, ValidateQrCodeUseCase],
 })
 export class QrcodeModule {}
