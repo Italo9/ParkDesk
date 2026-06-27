@@ -1,20 +1,20 @@
 import { Injectable } from '@nestjs/common';
 import { TicketGateway } from '../../domain/ports/ticket-gateway';
 import { TicketView } from '../../domain/pre-checkout';
-import { TicketService } from '../../../ticket/ticket.service';
+import { FindTicketByNumberUseCase } from '../../../ticket/application/find-ticket-by-number.usecase';
 
 @Injectable()
 export class TicketGatewayAdapter implements TicketGateway {
-  constructor(private readonly ticketService: TicketService) {}
+  constructor(private readonly findTicketByNumber: FindTicketByNumberUseCase) {}
 
   async getByNumber(ticketNumber: number): Promise<TicketView | null> {
-    const ticket = await this.ticketService.findOneTicketNumber(ticketNumber);
+    const ticket = await this.findTicketByNumber.execute(ticketNumber);
     if (!ticket) return null;
     return {
       status: ticket.status,
-      companyId: ticket.company.id,
+      companyId: ticket.companyId,
       checkInTime: ticket.checkInTime,
-      updatedAt: ticket.updated_at,
+      updatedAt: ticket.updatedAt as Date,
     };
   }
 }
