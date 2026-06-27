@@ -5,7 +5,7 @@ import { CreateUserStackDto } from '../auth/dto/users.use-case';
 import { User } from '../user/entities/user.entity';
 import { Company } from '../company/entities/company.entity';
 import * as bcrypt from 'bcrypt';
-import { UserService } from '../../src/user/user.service';
+import { StackAuthAdapter } from '../../src/auth/adapters/stack-auth.adapter';
 
 async function seedUser() {
   let queryRunner;
@@ -21,7 +21,7 @@ async function seedUser() {
     await queryRunner.startTransaction();
 
     const app = await NestFactory.createApplicationContext(AppModule);
-    const usersService = app.get(UserService);
+    const stackAuth = app.get(StackAuthAdapter);
 
     const userRepository = queryRunner.manager.getRepository(User);
     const companyRepository = queryRunner.manager.getRepository(Company);
@@ -54,7 +54,7 @@ async function seedUser() {
       password: '123456',
     };
 
-    await usersService.createUser(userStackDto);
+    await stackAuth.createUser(userStackDto);
     await userRepository.save(newUser); 
 
     await queryRunner.query(
